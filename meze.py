@@ -3,6 +3,7 @@ import numpy as np
 import string
 import random
 import datetime
+import pickle
 
 CONST_FREQS         = ['D','W','M']
 CONST_SAMPLE_RANGE1  = range(0,255)
@@ -12,7 +13,7 @@ CONST_SAMPLE_VAR    = 0.15
 
 class Tools:
     @staticmethod
-    def generate_test_DF(start,end,freq,fill=None):
+    def test_DF(start,end,freq,fill=None):
         if freq in CONST_FREQS:
             dr = pd.date_range(start=start,end=end,freq=freq).date
             df = pd.DataFrame(index=dr)
@@ -53,6 +54,17 @@ class Tools:
         
         return result
 
+class FileIO:
+    @staticmethod
+    def saveMZ(path,input):
+        with open(path,'wb') as handle:
+            pickle.dump(input,handle, protocol=pickle.HIGHEST_PROTOCOL)
+    
+    @staticmethod
+    def loadMZ(path):
+        with open(path,'rb') as handle:
+            return pickle.load(handle)
+
 class DF:
     def __init__(self,input,name=None):
         if isinstance(input,str):
@@ -85,13 +97,14 @@ class Container:
     def __init__(self,name):
         self.name = name
         self.folder = {}
-        self.keys = self.folder.keys()
-        self.values = self.folder.values()
 
         self.dr_min = None
         self.dr_max = None
 
     def update(self):
+        self.keys = [i for i in self.folder.keys()]
+        self.values = [i for i in self.folder.values()]
+
         temp_min = []
         temp_max = []
         for i in self.values:
@@ -138,3 +151,8 @@ class Container:
         df.insert(len(df.columns),'features',features)
 
         return df,self.dr_min.astype(str),self.dr_max.astype(str)
+    
+    def save(self,path):
+        f = open(path, 'wb')
+        pickle.dump(self.__dict__, f, 2)
+        f.close()
