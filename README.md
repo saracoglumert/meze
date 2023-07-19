@@ -19,3 +19,4 @@ Work in progress...
 - Auto-matching frequencies
 - GUI using Flask
 - Implementing Pytorch and Keras support
+- Implementing non time series data support
