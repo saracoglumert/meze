@@ -6,20 +6,16 @@ import datetime
 import pickle
 
 CONST_FREQS         = ['D','W','M']
-CONST_SAMPLE_RANGE1  = range(1,1024)
-CONST_SAMPLE_RANGE2 = range(1,8)
-CONST_SAMPLE_RANGE3 = range(1,128)
+CONST_SAMPLE_RANGE_HIGH  = range(1,1024)
+CONST_SAMPLE_RANGE_MID = range(1,128)
+CONST_SAMPLE_RANGE_LOW = range(1,8)
 CONST_SAMPLE_NAME   = 4
-CONST_SAMPLE_VAR    = 0.15
 
 class Tools:
     @staticmethod
     def sample(length):
-        rand_start = random.choice(CONST_SAMPLE_RANGE1)
-        rand_end = random.choice(CONST_SAMPLE_RANGE1)
-
         temp = np.linspace(0,length,length).round(2)
-        result = np.sin(temp)*random.choice(CONST_SAMPLE_RANGE3) + np.random.normal(scale=1, size=len(temp))
+        result = np.sin(temp)*random.choice(CONST_SAMPLE_RANGE_MID) + np.random.normal(scale=1, size=len(temp))
         
         return np.array(result)
 
@@ -49,8 +45,8 @@ class Tools:
             bot = datetime.datetime.strptime(start,'%d/%m/%Y')
             top = datetime.datetime.strptime(end,'%d/%m/%Y')
 
-            for _ in range(0,random.choice(CONST_SAMPLE_RANGE2)+1):
-                result.load_DF(Tools.test_DF(bot,top,freq,random.choice(CONST_SAMPLE_RANGE2)))
+            for _ in range(0,random.choice(CONST_SAMPLE_RANGE_LOW)+1):
+                result.load_DF(Tools.test_DF(bot,top,freq,random.choice(CONST_SAMPLE_RANGE_LOW)))
         
         return result
 
