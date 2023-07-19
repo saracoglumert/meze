@@ -2,12 +2,17 @@ import pandas as pd
 import numpy as np
 import string
 import random
+import datetime
 
-CONST_FREQS = ['D','W','M']
+CONST_FREQS         = ['D','W','M']
+CONST_SAMPLE_RANGE1  = range(0,255)
+CONST_SAMPLE_RANGE2 = range(0,8)
+CONST_SAMPLE_NAME   = 4
+CONST_SAMPLE_VAR    = 0.15
 
 class Tools:
     @staticmethod
-    def generate_test_file(start,end,freq,fill=None):
+    def generate_test_DF(start,end,freq,fill=None):
         if freq in CONST_FREQS:
             dr = pd.date_range(start=start,end=end,freq=freq).date
             df = pd.DataFrame(index=dr)
@@ -15,50 +20,68 @@ class Tools:
 
             if isinstance(fill,tuple) and len(fill) == 2 and isinstance(fill[0],bool) and  isinstance(fill[1],int)> 0:
                 for _ in range(fill[1]):
-                    temp_name = 'test_'+''.join(random.choice(string.ascii_lowercase) for i in range(4))
-                    temp_val = pd.Series(np.random.randint(0,255,len(dr)))
+                    temp_name = 'test_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+                    temp_val = pd.Series(np.random.randint(CONST_SAMPLE_RANGE1[0],CONST_SAMPLE_RANGE1[-1],len(dr)))
                     df.insert(len(df.columns),temp_name,temp_val.values)
 
-            return df
+            return DF(df)
 
     @staticmethod
-    def generate_test_folder(name,start,end,count,var):
-        
-        for _ in range(count):
+    def test_Container(name,start,end,count):
+        result = Container(name)
+
+        for _ in range(0,count):
             freq = random.choice(CONST_FREQS)
             
-            temp = pd.date_range(start=start,end=end,freq=freq).date
+            #bot = temp[0] + np.timedelta64(random.choice(range(0,8)),freq)
+            #top = temp[-1] - np.timedelta64(random.choice(range(0,8)),freq)
 
-            bot = temp[0] + np.timedelta64(var,round(len(temp)*var))
-            top = temp[-1] - np.timedelta64(var,round(len(temp)*var))
+            bot = datetime.datetime.strptime(start,'%d/%m/%Y')
+            top = datetime.datetime.strptime(end,'%d/%m/%Y')
 
             dr = pd.date_range(start=bot,end=top,freq=freq).date
             df = pd.DataFrame(index=dr)
 
-        pass
+            for _ in range(0,random.choice(CONST_SAMPLE_RANGE2)+1):
+                temp_name = 'test_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+                temp_val = pd.Series(np.random.randint(CONST_SAMPLE_RANGE1[0],CONST_SAMPLE_RANGE1[-1],len(dr)))
 
-class Container:
-    class File:
-        def __init__(self,path):
-            self.path = path
+                df.insert(len(df.columns),temp_name,temp_val.values)
+
+            temp_name = 'test_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+            result.load_DF(DF(df,temp_name))
+        
+        return result
+
+class DF:
+    def __init__(self,input,name=None):
+        if isinstance(input,str):
+            self.path = input
 
             self.name = self.path.split("/")[-1].split(".")[0]
-            self.type = path.split("/")[-1].split(".")[-1]
+            self.type = self.path.split("/")[-1].split(".")[-1]
 
             if (self.type == "xlsx"):
-                self.raw = pd.read_excel(path,index_col=0)
+                self.data = pd.read_excel(self.path,index_col=0)
             if (self.type == "csv"):
-                self.raw = pd.read_csv(path,index_col=0)
+                self.data = pd.read_csv(self.path,index_col=0)
             
-            self.raw.index.name = "date"
 
-            self.features = list(self.raw.columns.values)
-            self.index = self.raw.index
-            self.dr = pd.to_datetime(self.index)
-            self.freq = pd.infer_freq(self.index)
-            self.dr_min = self.dr.values[0]
-            self.dr_max = self.dr.values[-1]
-    
+        if isinstance(input,pd.DataFrame) and input is not None:
+            self.data = input
+            self.name = name
+            self.type = "DF"
+
+        self.data.index.name = "date"
+
+        self.features = list(self.data.columns.values)
+        self.index = self.data.index
+        self.dr = pd.to_datetime(self.index)
+        self.freq = pd.infer_freq(self.index)
+        self.dr_min = self.dr.values[0]
+        self.dr_max = self.dr.values[-1]
+
+class Container:
     def __init__(self,name):
         self.name = name
         self.folder = {}
@@ -79,8 +102,12 @@ class Container:
         self.dr_max = min(temp_max)
 
     def load_file(self,path):
-        temp = self.File(path)
+        temp = DF(path)
         self.folder[temp.name] = temp
+        self.update()
+
+    def load_DF(self,input):
+        self.folder[input.name] = input
         self.update()
 
     def report(self):
@@ -110,5 +137,4 @@ class Container:
         df.insert(len(df.columns),'features_count',feature_count)
         df.insert(len(df.columns),'features',features)
 
-        return df,self.dr_min,self.dr_max
-    
+        return df,self.dr_min.astype(str),self.dr_max.astype(str)
