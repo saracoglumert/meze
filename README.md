@@ -1,11 +1,20 @@
-# Meze
+# meze
 
-## to-do
-- write comments
-- exception and error management
+A Python tool for quicker data management and model building, for AI/ML applications using Time Series Data.
 
-## Features to implement
-- build from container
-- matching timeseries frequencies
+Work in progress...
+
+
+## Features
+
+- Can load xlsx and csv files
+- Analyse time series data
+
+
+## Roadmap
+
+- Add more common parameters to DF object
+- Building from Container
+- Auto-matching frequencies
 - GUI using Flask
-- implementing Pytorch and Keras support
+- Implementing Pytorch and Keras support
