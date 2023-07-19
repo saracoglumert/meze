@@ -6,51 +6,51 @@ import datetime
 import pickle
 
 CONST_FREQS         = ['D','W','M']
-CONST_SAMPLE_RANGE1  = range(0,255)
-CONST_SAMPLE_RANGE2 = range(0,8)
+CONST_SAMPLE_RANGE1  = range(1,1024)
+CONST_SAMPLE_RANGE2 = range(1,8)
+CONST_SAMPLE_RANGE3 = range(1,128)
 CONST_SAMPLE_NAME   = 4
 CONST_SAMPLE_VAR    = 0.15
 
 class Tools:
     @staticmethod
-    def test_DF(start,end,freq,fill=None):
+    def sample(length):
+        rand_start = random.choice(CONST_SAMPLE_RANGE1)
+        rand_end = random.choice(CONST_SAMPLE_RANGE1)
+
+        temp = np.linspace(0,length,length).round(2)
+        result = np.sin(temp)*random.choice(CONST_SAMPLE_RANGE3) + np.random.normal(scale=1, size=len(temp))
+        
+        return np.array(result)
+
+    def test_DF(start,end,freq,fill=0):
         if freq in CONST_FREQS:
             dr = pd.date_range(start=start,end=end,freq=freq).date
             df = pd.DataFrame(index=dr)
             df.name = ''.join(random.choice(string.ascii_lowercase) for i in range(4))
 
-            if isinstance(fill,tuple) and len(fill) == 2 and isinstance(fill[0],bool) and  isinstance(fill[1],int)> 0:
-                for _ in range(fill[1]):
-                    temp_name = 'test_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
-                    temp_val = pd.Series(np.random.randint(CONST_SAMPLE_RANGE1[0],CONST_SAMPLE_RANGE1[-1],len(dr)))
-                    df.insert(len(df.columns),temp_name,temp_val.values)
+            if fill > 0:
+                for _ in range(fill):
+                    temp_name = 'test_ft_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+                    temp_val = Tools.sample(len(dr))
+                    df.insert(len(df.columns),temp_name,temp_val)
 
-            return DF(df)
+            temp_name = 'test_DF_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+            return DF(df,)
 
     @staticmethod
-    def test_Container(name,start,end,count):
-        result = Container(name)
+    def test_Container(start,end,count):
+        temp_name = 'test_Container_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+        result = Container(temp_name)
 
         for _ in range(0,count):
             freq = random.choice(CONST_FREQS)
             
-            #bot = temp[0] + np.timedelta64(random.choice(range(0,8)),freq)
-            #top = temp[-1] - np.timedelta64(random.choice(range(0,8)),freq)
-
             bot = datetime.datetime.strptime(start,'%d/%m/%Y')
             top = datetime.datetime.strptime(end,'%d/%m/%Y')
 
-            dr = pd.date_range(start=bot,end=top,freq=freq).date
-            df = pd.DataFrame(index=dr)
-
             for _ in range(0,random.choice(CONST_SAMPLE_RANGE2)+1):
-                temp_name = 'test_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
-                temp_val = pd.Series(np.random.randint(CONST_SAMPLE_RANGE1[0],CONST_SAMPLE_RANGE1[-1],len(dr)))
-
-                df.insert(len(df.columns),temp_name,temp_val.values)
-
-            temp_name = 'test_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
-            result.load_DF(DF(df,temp_name))
+                result.load_DF(Tools.test_DF(bot,top,freq,random.choice(CONST_SAMPLE_RANGE2)))
         
         return result
 
@@ -81,7 +81,7 @@ class DF:
 
         if isinstance(input,pd.DataFrame) and input is not None:
             self.data = input
-            self.name = name
+            self.name = self.data.name
             self.type = "DF"
 
         self.data.index.name = "date"
@@ -96,14 +96,14 @@ class DF:
 class Container:
     def __init__(self,name):
         self.name = name
-        self.folder = {}
+        self.data = {}
 
         self.dr_min = None
         self.dr_max = None
 
     def update(self):
-        self.keys = [i for i in self.folder.keys()]
-        self.values = [i for i in self.folder.values()]
+        self.keys = [i for i in self.data.keys()]
+        self.values = [i for i in self.data.values()]
 
         temp_min = []
         temp_max = []
@@ -116,11 +116,11 @@ class Container:
 
     def load_file(self,path):
         temp = DF(path)
-        self.folder[temp.name] = temp
+        self.data[temp.name] = temp
         self.update()
 
     def load_DF(self,input):
-        self.folder[input.name] = input
+        self.data[input.name] = input
         self.update()
 
     def report(self):
