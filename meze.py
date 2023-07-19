@@ -7,8 +7,6 @@ import random
 import datetime
 import pickle
 
-
-
 class Tools:
     @staticmethod
     def sample(length):
@@ -32,7 +30,7 @@ class Tools:
                 raise ValueError()
 
             temp_name = 'test_DF_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
-            return DF(df,)
+            return Timeseries(df,)
 
     @staticmethod
     def test_Container(start,end,length):
@@ -62,7 +60,7 @@ class FileIO:
         with open(path,'rb') as handle:
             return pickle.load(handle)
 
-class DF:
+class Timeseries:
     def __init__(self,input,name=None):
         if isinstance(input,str):
             self.path = input
@@ -117,7 +115,7 @@ class Container:
         self.dr_max = min(temp_max)
 
     def load_file(self,path):
-        temp = DF(path)
+        temp = Timeseries(path)
         self.data[temp.name] = temp
         self.update()
 
