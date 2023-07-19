@@ -11,6 +11,10 @@ CONST_SAMPLE_RANGE_MID = range(1,128)
 CONST_SAMPLE_RANGE_LOW = range(1,8)
 CONST_SAMPLE_NAME   = 4
 
+ERROR_LENGTH = "Length cannot be non-integer."
+ERROR_OBJTYPE = "Type is not correct." 
+ERROR_FILETYPE = "Filetype is unknown."
+
 class Tools:
     @staticmethod
     def sample(length):
@@ -30,16 +34,18 @@ class Tools:
                     temp_name = 'test_ft_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
                     temp_val = Tools.sample(len(dr))
                     df.insert(len(df.columns),temp_name,temp_val)
+            else:
+                raise ValueError()
 
             temp_name = 'test_DF_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
             return DF(df,)
 
     @staticmethod
-    def test_Container(start,end,count):
+    def test_Container(start,end,length):
         temp_name = 'test_Container_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
         result = Container(temp_name)
 
-        for _ in range(0,count):
+        for _ in range(0,length):
             freq = random.choice(CONST_FREQS)
             
             bot = datetime.datetime.strptime(start,'%d/%m/%Y')
@@ -47,6 +53,7 @@ class Tools:
 
             for _ in range(0,random.choice(CONST_SAMPLE_RANGE_LOW)+1):
                 result.load_DF(Tools.test_DF(bot,top,freq,random.choice(CONST_SAMPLE_RANGE_LOW)))
+        raise ValueError(ERROR_LENGTH)
         
         return result
 
@@ -71,14 +78,19 @@ class DF:
 
             if (self.type == "xlsx"):
                 self.data = pd.read_excel(self.path,index_col=0)
-            if (self.type == "csv"):
+            elif (self.type == "csv"):
                 self.data = pd.read_csv(self.path,index_col=0)
-            
+            else:
+                raise ValueError(ERROR_FILETYPE) 
+        else:
+            raise ValueError(ERROR_OBJTYPE) 
 
         if isinstance(input,pd.DataFrame) and input is not None:
             self.data = input
             self.name = self.data.name
             self.type = "DF"
+        else:
+            raise ValueError(ERROR_OBJTYPE)
 
         self.data.index.name = "date"
 
