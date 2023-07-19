@@ -1,4 +1,4 @@
-import config
+import config as cfg
 
 import pandas as pd
 import numpy as np
@@ -13,41 +13,41 @@ class Tools:
     @staticmethod
     def sample(length):
         temp = np.linspace(0,length,length).round(2)
-        result = np.sin(temp)*random.choice(CONST_SAMPLE_RANGE_MID) + np.random.normal(scale=1, size=len(temp))
+        result = np.sin(temp)*random.choice(cfg.CONST_SAMPLE_RANGE_MID) + np.random.normal(scale=1, size=len(temp))
         
         return np.array(result)
 
     def test_DF(start,end,freq,fill=0):
-        if freq in CONST_FREQS:
+        if freq in cfg.CONST_FREQS:
             dr = pd.date_range(start=start,end=end,freq=freq).date
             df = pd.DataFrame(index=dr)
             df.name = ''.join(random.choice(string.ascii_lowercase) for i in range(4))
 
             if fill > 0:
                 for _ in range(fill):
-                    temp_name = 'test_ft_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+                    temp_name = 'test_ft_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
                     temp_val = Tools.sample(len(dr))
                     df.insert(len(df.columns),temp_name,temp_val)
             else:
                 raise ValueError()
 
-            temp_name = 'test_DF_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+            temp_name = 'test_DF_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
             return DF(df,)
 
     @staticmethod
     def test_Container(start,end,length):
-        temp_name = 'test_Container_'+''.join(random.choice(string.ascii_lowercase) for i in range(CONST_SAMPLE_NAME))
+        temp_name = 'test_Container_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
         result = Container(temp_name)
 
         for _ in range(0,length):
-            freq = random.choice(CONST_FREQS)
+            freq = random.choice(cfg.CONST_FREQS)
             
             bot = datetime.datetime.strptime(start,'%d/%m/%Y')
             top = datetime.datetime.strptime(end,'%d/%m/%Y')
 
-            for _ in range(0,random.choice(CONST_SAMPLE_RANGE_LOW)+1):
-                result.load_DF(Tools.test_DF(bot,top,freq,random.choice(CONST_SAMPLE_RANGE_LOW)))
-        raise ValueError(ERROR_LENGTH)
+            for _ in range(0,random.choice(cfg.CONST_SAMPLE_RANGE_LOW)+1):
+                result.load_DF(Tools.test_DF(bot,top,freq,random.choice(cfg.CONST_SAMPLE_RANGE_LOW)))
+        raise ValueError(cfg.ERROR_LENGTH)
         
         return result
 
@@ -75,16 +75,16 @@ class DF:
             elif (self.type == "csv"):
                 self.data = pd.read_csv(self.path,index_col=0)
             else:
-                raise ValueError(ERROR_FILETYPE) 
+                raise ValueError(cfg.ERROR_FILETYPE) 
         else:
-            raise ValueError(ERROR_OBJTYPE) 
+            raise ValueError(cfg.ERROR_OBJTYPE) 
 
         if isinstance(input,pd.DataFrame) and input is not None:
             self.data = input
             self.name = self.data.name
             self.type = "DF"
         else:
-            raise ValueError(ERROR_OBJTYPE)
+            raise ValueError(cfg.ERROR_OBJTYPE)
 
         self.data.index.name = "date"
 
