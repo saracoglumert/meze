@@ -14,6 +14,7 @@ Work in progress...
 ## Roadmap
 
 - Add more common parameters to DF object
+- Visualize parameters in container, export and show
 - Building from Container
 - Auto-matching frequencies
 - GUI using Flask
