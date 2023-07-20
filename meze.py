@@ -17,6 +17,8 @@ import pandasdmx as sdmx
 import yfinance as yf
 import wbgapi as wb
 
+
+
 class Fetcher:
     class YahooFinance:
         def fetch(self,tick,start,end):
@@ -357,3 +359,19 @@ class Dataset:
 
     def to_excel(self,path):
         self.data.to_excel(path)
+
+class Problem:
+    class Classification:
+        pass
+
+    class Clustering:
+        pass
+
+    class Prediction:
+        pass
+
+class Model:
+    pass
+
+class Interpret:
+    pass

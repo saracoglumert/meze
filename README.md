@@ -18,6 +18,7 @@ Features to be implemented in future
 - Implement APIs from Yahoo Finance and World Bank (fredapi, yfinance, wbapi, imfpy and pandaSDMX)
 - Implementing Pytorch and Keras support
 - Implement console debugging
+- ANOVA Table
 
 **Level 2**
 - Add more common parameters to DF object (analyise)
@@ -25,8 +26,8 @@ Features to be implemented in future
 - GUI using Flask and/or Bokeh
 - Implementing non time series data support
 
-
 ## Problems
+- Basic Analysis
 - Clustering
 - Classification
 - Prediction
