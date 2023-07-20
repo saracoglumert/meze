@@ -25,7 +25,7 @@ Features to be implemented in future
 - Implementing non time series data support
 
 
-## Common Problems
+## Problems
 - Clustering
 - Classification
 - Prediction
