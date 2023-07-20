@@ -66,6 +66,27 @@ class Fetcher:
 
 class Tools:
     @staticmethod
+    def td_format(td_object):
+        seconds = int(td_object.total_seconds())
+        periods = [
+            ('year',        60*60*24*365),
+            ('month',       60*60*24*30),
+            ('day',         60*60*24),
+            ('hour',        60*60),
+            ('minute',      60),
+            ('second',      1)
+        ]
+
+        strings=[]
+        for period_name, period_seconds in periods:
+            if seconds > period_seconds:
+                period_value , seconds = divmod(seconds, period_seconds)
+                has_s = 's' if period_value > 1 else ''
+                strings.append("%s %s%s" % (period_value, period_name, has_s))
+
+        return ", ".join(strings)
+    
+    @staticmethod
     def sample(length):
         x = 1
         start = x
@@ -174,10 +195,9 @@ class Timeseries:
         self.dr = pd.to_datetime(self.index)
         self.dr_min = self.dr.values[0]
         self.dr_max = self.dr.values[-1]
-        self.freq = pd.infer_freq(self.index)
-
-    def filter(self,input):
-        return self.data.filter(input,axis=1)
+        self.timedelta = pd.to_timedelta(np.diff(self.index).min())
+        self.freq = cfg.CONST_FREQ_MAP[min(range(len(cfg.CONST_FREQ_MAP_SECONDS)), key=lambda i: abs(cfg.CONST_FREQ_MAP_SECONDS[i]-self.timedelta.total_seconds()))]
+        self.na = self.data.isna().sum().sum()
 
     def sample(self,count):
         result = []
@@ -185,14 +205,25 @@ class Timeseries:
             result.append(self.data.columns.values[random.choice(range(len(self.data.columns.values)))])
         
         return result
+    def filter_features(self,input):
+        self.data = self.data.filter(input,axis=1)
     
+    def get_filter_feautres(self,input):
+        return self.data.filter(input,axis=1)
+
+    def filter_index(self,start,end):
+        self.data = self.data.loc[start:end]
+
+    def get_filter_index(self,start,end):
+        return self.data.loc[start:end]
+
     def match(self,freq,order):
-        temp = self.data.resample(rule=freq).mean().interpolate(method='spline', order=order)
+        temp = self.data.resample(rule=freq).mean().interpolate(method='spline', order=order, s=0.1)
         self.data = temp
         self.freq = freq
 
     def get_match(self,freq,order):
-        temp = self.data.resample(rule=freq).mean().interpolate(method='spline', order=order)
+        temp = self.data.resample(rule=freq).mean().interpolate(method='spline', order=order, s=0.1)
         return Timeseries(temp,name=self.name+'_matched_'+freq)
     
 class Container:
@@ -234,7 +265,6 @@ class Container:
         paths = [folder+'/'+i for i in tmp]
 
         for i in range(0,len(paths)):
-            print(tmp[i])
             if not tmp[i][0] == '.':
                 self.load_file(paths[i])
 
@@ -267,26 +297,36 @@ class Container:
         df.insert(len(df.columns),'type',type)
         df.insert(len(df.columns),'dr_min',drmin)
         df.insert(len(df.columns),'dr_max',drmax)
+        df.insert(len(df.columns),'freq',freq)
         df.insert(len(df.columns),'features_count',feature_count)
         df.insert(len(df.columns),'features',features)
 
         return df
     
-    def build(self,input,start,end,freq,order):
+    def build(self,input,freq,order,start=None,end=None):
         temp_df = []
         temp_index = []
 
+        if start is None and end is None:
+            start = self.dr_min
+            end = self.dr_max
+
         for key, value in input.items():
+            print(self.data[key].freq)
+            print(freq)
+            # If equal, pass
+            if self.data[key].freq == freq:
+                break
             # Timeseries Al
-            temp_1 = self.data[key].data
+            temp_1 = self.data[key]
             #print(temp_ts)
             # İlgili kolonları Al
-            temp_2 = temp_1.filter(value)
+            temp_2 = temp_1.get_filter(value)
             # İlgili Tarihleri Al
             temp_3 = temp_2.loc[start:end]
             #print(temp_3)
             # Matchini Al
-            temp_4 = temp_3.resample(rule=freq).mean().interpolate(method='spline', order=order)
+            temp_4 = self.data[key].get_match(freq,order).data
             # Naming convention        
             temp_dict = {}
             for i in value:
@@ -300,6 +340,27 @@ class Container:
         df_final = pd.concat(temp_df,axis=1).dropna()
 
         return Dataset(df_final)
+
+    def build2(self,input,freq,order,start=None,end=None):
+        result = []
+        
+        if start is None and end is None:
+            start = self.dr_min
+            end = self.dr_max
+
+        for key, value in input.items():
+            obj = self.data[key]
+            
+            if not freq == obj.freq:
+                obj.match(freq,order)
+            
+            obj.filter_features(value)
+            obj.filter_index(start,end)
+            obj.data.columns = [key+'_'+i for i in obj.data.columns]
+
+            result.append(obj.data)
+
+        return pd.concat(result,axis=1)
 
     def save(self,path):
         f = open(path, 'wb')

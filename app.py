@@ -5,17 +5,30 @@ import numpy as np
 if __name__ == "__main__":
        t = mz.Tools
        f = mz.FileIO
-    
+
        cont = mz.Container('deneme')
 
-       ff = mz.Fetcher().ECB()
+       cont.load_file('data/interests.xls')
+       cont.load_file('data/WB.xlsx')
+       
+       cont.load_folder('data/SP500',['AAPL.xlsx',
+                                      'GOOG.xlsx',
+                                      'NVDA.xlsx',
+                                      'TSLA.xlsx',
+                                      'MSFT.xlsx',
+                                      'AMZN.xlsx',
+                                      'META.xlsx'])
+       
 
-    #cont.load_file('data/WB.xlsx')
-    #cont.load_file('data/stocks/AAPL.xlsx')
-    #cont.load_file('data/stocks/NVDA.xlsx')
+       #
+       
+       filter=  {'interests':['FED','ECB'],
+                 #'AAPL':['price'],
+                 #'GOOG':['price'],
+                 #'NVDA':['price'],
+                 #'TSLA':['price'],
+                 #'MSFT':['price'],
+                 #'AMZN':['price'],
+                 'META':['price']}
 
-    #inp = {'WB':['USA_NY.GDP.MKTP.CD','EUU_NY.GDP.MKTP.CD'],
-    #       'AAPL':['price'],
-    #       'NVDA':['price']}
-
-    #res = cont.build(inp,'1/1/2005','1/1/2023', 'D', 3)
+       res = cont.build2(filter,'D',3)
