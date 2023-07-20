@@ -6,57 +6,79 @@ import string
 import random
 import datetime
 import pickle
+import statsmodels.api as sm
+import functools as ft
 
 class Tools:
     @staticmethod
     def sample(length):
-        temp = np.linspace(0,length,length).round(2)
-        result = np.sin(temp)*random.choice(cfg.CONST_SAMPLE_RANGE_MID) + np.random.normal(scale=1, size=len(temp))
-        
-        return np.array(result)
+        x = 1
+        start = x
+        xposition = [start]
+        probabilities = [10, 120]
+        for i in range(1, length):
+            x += random.choice(probabilities)
+            xposition.append(x)
 
-    def test_DF(start,end,freq,fill=0):
+        return np.array(xposition)
+
+    def test_DF(start,end,freq,fill=0,name=None):
         if freq in cfg.CONST_FREQS:
             dr = pd.date_range(start=start,end=end,freq=freq).date
             df = pd.DataFrame(index=dr)
-            df.name = ''.join(random.choice(string.ascii_lowercase) for i in range(4))
+            if name is None:
+                df.name = 'test_DF_'+''.join(random.choice(string.ascii_lowercase) for i in range(4))
+            else:
+                df.name = name
 
             if fill > 0:
-                for _ in range(fill):
-                    temp_name = 'test_ft_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
+                for i in range(fill):
+                    if i == 0:
+                        temp_name = "test_ft"
+                    else:
+                        temp_name = 'test_ft_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
                     temp_val = Tools.sample(len(dr))
                     df.insert(len(df.columns),temp_name,temp_val)
             else:
                 raise ValueError()
 
-            temp_name = 'test_DF_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
-            return Timeseries(df,)
+            return Timeseries(df)
 
     @staticmethod
     def test_Container(start,end,length):
         temp_name = 'test_Container_'+''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
         result = Container(temp_name)
-
-        for _ in range(0,length):
+        
+        for i in range(0,length):
             freq = random.choice(cfg.CONST_FREQS)
-            
-            bot = datetime.datetime.strptime(start,'%d/%m/%Y')
-            top = datetime.datetime.strptime(end,'%d/%m/%Y')
+            dr = pd.date_range(start=start,end=end,freq=freq).date
 
-            for _ in range(0,random.choice(cfg.CONST_SAMPLE_RANGE_LOW)+1):
-                result.load_DF(Tools.test_DF(bot,top,freq,random.choice(cfg.CONST_SAMPLE_RANGE_LOW)))
-        raise ValueError(cfg.ERROR_LENGTH)
+            if i == 0:
+                temp_df_name = 'test_DF'
+            else:    
+                temp_df_name = None
+
+            t_start = datetime.datetime.strptime(start,'%d/%m/%Y') + datetime.timedelta(days=len(dr) * np.random.uniform(0,cfg.CONST_SAMPLE_RANGE_CONT_VAR))
+            t_end = datetime.datetime.strptime(end,'%d/%m/%Y') - datetime.timedelta(days=len(dr) * np.random.uniform(0,cfg.CONST_SAMPLE_RANGE_CONT_VAR))
+
+            tt_start = t_start.date()
+            tt_end = t_end.date()
+
+            print(tt_start)
+
+            for _ in range(0,random.choice(cfg.CONST_SAMPLE_RANGE_DF_COUNT)+1):
+                result.load_DF(Tools.test_DF(tt_start,tt_end,freq,random.choice(cfg.CONST_SAMPLE_RANGE_FT_COUNT),temp_df_name))
         
         return result
 
 class FileIO:
     @staticmethod
-    def saveMZ(path,input):
+    def writeMZ(path,input):
         with open(path,'wb') as handle:
             pickle.dump(input,handle, protocol=pickle.HIGHEST_PROTOCOL)
     
     @staticmethod
-    def loadMZ(path):
+    def readMZ(path):
         with open(path,'rb') as handle:
             return pickle.load(handle)
 
@@ -68,31 +90,42 @@ class Timeseries:
             self.name = self.path.split("/")[-1].split(".")[0]
             self.type = self.path.split("/")[-1].split(".")[-1]
 
-            if (self.type == "xlsx"):
+            if (self.type in ['xls','xlsx']):
                 self.data = pd.read_excel(self.path,index_col=0)
             elif (self.type == "csv"):
                 self.data = pd.read_csv(self.path,index_col=0)
             else:
                 raise ValueError(cfg.ERROR_FILETYPE) 
-        else:
-            raise ValueError(cfg.ERROR_OBJTYPE) 
-
-        if isinstance(input,pd.DataFrame) and input is not None:
+        elif isinstance(input,pd.DataFrame) and input is not None:
             self.data = input
             self.name = self.data.name
-            self.type = "DF"
+            self.type = "pd"
         else:
             raise ValueError(cfg.ERROR_OBJTYPE)
 
         self.data.index.name = "date"
+        self.data.index = pd.to_datetime(self.data.index)
 
         self.features = list(self.data.columns.values)
         self.index = self.data.index
         self.dr = pd.to_datetime(self.index)
-        self.freq = pd.infer_freq(self.index)
         self.dr_min = self.dr.values[0]
         self.dr_max = self.dr.values[-1]
+        self.freq = pd.infer_freq(self.index)
 
+    def filter(self,input):
+        return self.data.filter(input,axis=1)
+
+    def sample(self,count):
+        result = []
+        for _ in range(0,count):
+            result.append(self.data.columns.values[random.choice(range(len(self.data.columns.values)))])
+        
+        return result
+    
+    def match(self,freq,order):
+        return self.data.resample(rule=freq).mean().interpolate(method='spline', order=order).round(2)
+        
 class Container:
     def __init__(self,name):
         self.name = name
@@ -123,6 +156,9 @@ class Container:
         self.data[input.name] = input
         self.update()
 
+    def sample(self):
+        return self.data[self.keys[random.choice(range(len(self.data)))]]
+
     def report(self):
         df = pd.DataFrame()
         
@@ -134,7 +170,7 @@ class Container:
         feature_count = []
         features = []
 
-        for i in self.values:
+        for _,i in self.data.items():
             name.append(i.name)
             type.append(i.type)
             drmin.append(i.dr_min)
@@ -150,9 +186,58 @@ class Container:
         df.insert(len(df.columns),'features_count',feature_count)
         df.insert(len(df.columns),'features',features)
 
-        return df,self.dr_min.astype(str),self.dr_max.astype(str)
+        return df
     
+    def build(self,input,start,end,freq,order):
+        temp_df = []
+        temp_index = []
+
+        for key, value in input.items():
+            # Timeseries Al
+            temp_1 = self.data[key].data
+            #print(temp_ts)
+            # İlgili kolonları Al
+            temp_2 = temp_1.filter(value)
+            # İlgili Tarihleri Al
+            temp_3 = temp_2.loc[start:end]
+            #print(temp_3)
+            # Matchini Al
+            temp_4 = temp_3.resample(rule=freq).mean().interpolate(method='spline', order=order)
+            # Naming convention        
+            temp_dict = {}
+            for i in value:
+                temp_dict[i] = key+'_'+i
+
+            temp_4 = temp_4.rename(columns=temp_dict)
+
+            temp_df.append(temp_4)
+            temp_index.append(temp_4.index.tolist())
+        
+        df_final = pd.concat(temp_df,axis=1).dropna()
+
+        return Dataset(df_final)
+
+
     def save(self,path):
         f = open(path, 'wb')
         pickle.dump(self.__dict__, f, 2)
         f.close()
+
+class Dataset:
+    def __init__(self,data):
+        self.data = data
+
+        self.features = list(self.data.columns.values)
+
+        self.freq = pd.infer_freq(self.data.index)
+        self.period = cfg.CONST_FREQ_MAP[self.freq.split("-")[0]]
+        
+        # Seasonal Decomposition
+        #self.sd_add = sm.tsa.seasonal_decompose(np.asarray(self.data), model='additive',period=self.period)
+        #self.sd_mult = sm.tsa.seasonal_decompose(np.asarray(self.data), model='multiplicative',period=self.period)
+        #tmp = sm.tsa.SARIMAX(self.data, order=(2,0,0))
+        #self.sarimax = tmp.fit()
+        #self.analysis = {'sd_add_trend':self.sd_add.trend,
+        #                 'sd_add_seasonal':self.sd_add.seasonal,
+        #                 'sd_mult_trend':self.sd_mult.trend,
+        #                 'sd_mult_seasonal':self.sd_mult.seasonal}
