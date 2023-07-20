@@ -3,9 +3,6 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 import numpy as np
 
 if __name__ == "__main__":
-       t = mz.Tools
-       f = mz.FileIO
-
        cont = mz.Container('deneme')
 
        cont.load_file('data/interests.xls')
@@ -19,8 +16,6 @@ if __name__ == "__main__":
                                       'AMZN.xlsx',
                                       'META.xlsx'])
        
-
-       #
        
        filter=  {'interests':['FED','ECB'],
                  'WB':[],
@@ -32,4 +27,4 @@ if __name__ == "__main__":
                  'AMZN':['price'],
                  'META':['price']}
 
-       res = cont.build(filter,'D',3)
+       #res = cont.build(filter,'D',3)

@@ -325,6 +325,9 @@ class Container:
             result.append(obj.data)
 
         final = pd.concat(result,axis=1)
+        final.index = final.index.date
+        final.index.name = 'date'
+        final.name = self.name
 
         return Dataset(final)
 
@@ -351,3 +354,6 @@ class Dataset:
         #                 'sd_add_seasonal':self.sd_add.seasonal,
         #                 'sd_mult_trend':self.sd_mult.trend,
         #                 'sd_mult_seasonal':self.sd_mult.seasonal} 
+
+    def to_excel(self,path):
+        self.data.to_excel(path)
