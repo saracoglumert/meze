@@ -304,44 +304,6 @@ class Container:
         return df
     
     def build(self,input,freq,order,start=None,end=None):
-        temp_df = []
-        temp_index = []
-
-        if start is None and end is None:
-            start = self.dr_min
-            end = self.dr_max
-
-        for key, value in input.items():
-            print(self.data[key].freq)
-            print(freq)
-            # If equal, pass
-            if self.data[key].freq == freq:
-                break
-            # Timeseries Al
-            temp_1 = self.data[key]
-            #print(temp_ts)
-            # İlgili kolonları Al
-            temp_2 = temp_1.get_filter(value)
-            # İlgili Tarihleri Al
-            temp_3 = temp_2.loc[start:end]
-            #print(temp_3)
-            # Matchini Al
-            temp_4 = self.data[key].get_match(freq,order).data
-            # Naming convention        
-            temp_dict = {}
-            for i in value:
-                temp_dict[i] = key+'_'+i
-
-            temp_4 = temp_4.rename(columns=temp_dict)
-
-            temp_df.append(temp_4)
-            temp_index.append(temp_4.index.tolist())
-        
-        df_final = pd.concat(temp_df,axis=1).dropna()
-
-        return Dataset(df_final)
-
-    def build2(self,input,freq,order,start=None,end=None):
         result = []
         
         if start is None and end is None:
@@ -350,17 +312,21 @@ class Container:
 
         for key, value in input.items():
             obj = self.data[key]
-            
             if not freq == obj.freq:
                 obj.match(freq,order)
             
-            obj.filter_features(value)
+            if value:
+                obj.filter_features(value)
+                
+            
             obj.filter_index(start,end)
             obj.data.columns = [key+'_'+i for i in obj.data.columns]
 
             result.append(obj.data)
 
-        return pd.concat(result,axis=1)
+        final = pd.concat(result,axis=1)
+
+        return Dataset(final)
 
     def save(self,path):
         f = open(path, 'wb')

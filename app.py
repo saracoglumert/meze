@@ -23,12 +23,13 @@ if __name__ == "__main__":
        #
        
        filter=  {'interests':['FED','ECB'],
-                 #'AAPL':['price'],
-                 #'GOOG':['price'],
-                 #'NVDA':['price'],
-                 #'TSLA':['price'],
-                 #'MSFT':['price'],
-                 #'AMZN':['price'],
+                 'WB':[],
+                 'AAPL':['price'],
+                 'GOOG':['price'],
+                 'NVDA':['price'],
+                 'TSLA':['price'],
+                 'MSFT':['price'],
+                 'AMZN':['price'],
                  'META':['price']}
 
-       res = cont.build2(filter,'D',3)
+       res = cont.build(filter,'D',3)
