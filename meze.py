@@ -11,6 +11,7 @@ import requests
 from io import StringIO
 import re
 import dateutil.parser
+import os
 
 import pandasdmx as sdmx
 import yfinance as yf
@@ -224,6 +225,21 @@ class Container:
         self.data[input.name] = input
         self.update()
 
+    def load_folder(self,folder,files=None):
+        if files is None:
+            tmp = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+        else:
+            tmp = files
+        
+        paths = [folder+'/'+i for i in tmp]
+
+        for i in range(0,len(paths)):
+            print(tmp[i])
+            if not tmp[i][0] == '.':
+                self.load_file(paths[i])
+
+        return tmp
+
     def sample(self):
         return self.data[self.keys[random.choice(range(len(self.data)))]]
 
@@ -284,7 +300,6 @@ class Container:
         df_final = pd.concat(temp_df,axis=1).dropna()
 
         return Dataset(df_final)
-
 
     def save(self,path):
         f = open(path, 'wb')
