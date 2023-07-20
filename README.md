@@ -12,6 +12,7 @@ Work in progress...
 
 
 ## Roadmap
+Features to be implemented in future
 
 ### Level 1
 - Implement APIs from Yahoo Finance and World Bank (fredapi, yfinance, wbapi, imfpy and pandaSDMX)
