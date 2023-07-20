@@ -14,11 +14,10 @@ Work in progress...
 ## Roadmap
 Features to be implemented in future
 
-### Level 1
+*Level 1*
 - Implement APIs from Yahoo Finance and World Bank (fredapi, yfinance, wbapi, imfpy and pandaSDMX)
 - Implementing Pytorch and Keras support
-
-### Level 2
+*Level 2*
 - Add more common parameters to DF object (analyise)
 - Visualize parameters in container, export and show
 - GUI using Flask and/or Bokeh
