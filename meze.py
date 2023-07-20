@@ -2,12 +2,11 @@ import config as cfg
 
 import pandas as pd
 import numpy as np
+import statsmodels.api as sm
 import string
 import random
 import datetime
 import pickle
-import statsmodels.api as sm
-import functools as ft
 
 class Tools:
     @staticmethod
@@ -22,6 +21,11 @@ class Tools:
 
         return np.array(xposition)
 
+    @staticmethod
+    def rand_name():
+        ''.join(random.choice(string.ascii_lowercase) for i in range(cfg.CONST_SAMPLE_NAME))
+
+    @staticmethod
     def test_DF(start,end,freq,fill=0,name=None):
         if freq in cfg.CONST_FREQS:
             dr = pd.date_range(start=start,end=end,freq=freq).date
@@ -96,9 +100,12 @@ class Timeseries:
                 self.data = pd.read_csv(self.path,index_col=0)
             else:
                 raise ValueError(cfg.ERROR_FILETYPE) 
-        elif isinstance(input,pd.DataFrame) and input is not None:
+        elif isinstance(input,pd.DataFrame):
             self.data = input
-            self.name = self.data.name
+            if name is None:
+                self.name = Tools.rand_name()
+            else:
+                self.name = name
             self.type = "pd"
         else:
             raise ValueError(cfg.ERROR_OBJTYPE)
@@ -124,8 +131,14 @@ class Timeseries:
         return result
     
     def match(self,freq,order):
-        return self.data.resample(rule=freq).mean().interpolate(method='spline', order=order).round(2)
-        
+        temp = self.data.resample(rule=freq).mean().interpolate(method='spline', order=order)
+        self.data = temp
+        self.freq = freq
+
+    def get_match(self,freq,order):
+        temp = self.data.resample(rule=freq).mean().interpolate(method='spline', order=order)
+        return Timeseries(temp,name=self.name+'_matched_'+freq)
+    
 class Container:
     def __init__(self,name):
         self.name = name

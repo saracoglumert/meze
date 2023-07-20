@@ -12,12 +12,17 @@ Work in progress...
 
 
 ## Roadmap
-
-- Add more common parameters to DF object
-- Visualize parameters in container, export and show
-- Building from Container
-- Auto-matching frequencies
-- GUI using Flask and/or Bokeh
-- Implementing Pytorch and Keras support
-- Implementing non time series data support
+### Level 1
 - Implement APIs from Yahoo Finance and World Bank
+- Implementing Pytorch and Keras support
+
+### Level 2
+- Add more common parameters to DF object (analyise)
+- Visualize parameters in container, export and show
+- GUI using Flask and/or Bokeh
+- Implementing non time series data support
+
+## Common Problems
+- Clustering
+- Classification
+- Prediction
