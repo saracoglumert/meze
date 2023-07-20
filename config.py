@@ -1,4 +1,4 @@
-CONST_FREQS         = ['D','W','M']
+CONST_FREQ_MAP         = ['D','W','M']
 CONST_SAMPLE_RANGE_HIGH  = range(1,1024)
 CONST_SAMPLE_RANGE_MID = range(1,128)
 CONST_SAMPLE_RANGE_LOW = range(1,8)

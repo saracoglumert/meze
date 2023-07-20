@@ -230,7 +230,7 @@ class Dataset:
         self.features = list(self.data.columns.values)
 
         self.freq = pd.infer_freq(self.data.index)
-        self.period = cfg.CONST_FREQ_MAP[self.freq.split("-")[0]]
+        #self.period = cfg.CONST_FREQ_MAP[self.freq.split("-")[0]]
         
         # Seasonal Decomposition
         #self.sd_add = sm.tsa.seasonal_decompose(np.asarray(self.data), model='additive',period=self.period)

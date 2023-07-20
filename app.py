@@ -17,5 +17,3 @@ if __name__ == "__main__":
            'NVDA':['price']}
 
     res = cont.build(inp,'1/1/2005','1/1/2023', 'D', 3)
-
-    c = f.loadMZ('test.mz')
