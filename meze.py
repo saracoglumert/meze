@@ -7,6 +7,61 @@ import string
 import random
 import datetime
 import pickle
+import requests
+from io import StringIO
+import re
+import dateutil.parser
+
+import pandasdmx as sdmx
+import yfinance as yf
+import wbgapi as wb
+
+class Fetcher:
+    class YahooFinance:
+        def fetch(self,tick,start,end):
+            if isinstance(tick,str):
+                tmp = yf.Ticker(tick)
+
+                start = dateutil.parser.parse(start).strftime("%Y-%m-%d")
+                end = dateutil.parser.parse(end).strftime("%Y-%m-%d")
+
+                tmp2 = tmp.history(start=start,end=end).iloc[:,3:4].rename(columns={"Close": "price", "Volume": "volume", "Dividends":"dividends"})
+                tmp2.index = tmp2.index.date
+
+                return tmp2
+            elif isinstance(tick,list):
+                df = pd.DataFrame()
+                
+                for t in tick:
+                    tmp = yf.Ticker(t)
+
+                    start = dateutil.parser.parse(start).strftime("%Y-%m-%d")
+                    end = dateutil.parser.parse(end).strftime("%Y-%m-%d")
+
+                    tmp2 = tmp.history(start=start,end=end).iloc[:,3:4].rename(columns={"Close": "price", "Volume": "volume", "Dividends":"dividends"})
+                    tmp2.index = tmp2.index.date
+
+                    df.insert(len(df.columns),t,tmp2['price'])
+
+                return df
+            else:
+                raise ValueError(cfg.ERROR_OBJTYPE)
+            
+    class FRED:
+        pass
+
+    class ECB:
+        def fetch(self,tick,region,start,end):
+            tmp = sdmx.Request('ECB')
+            res = tmp.data(resource_id = 'EXR', key={'CURRENCY': ['CHF', 'EUR']}, params = {'startPeriod': '2016'})
+            data = res.data
+
+            return data
+    class WB:
+        pass
+
+    class IMF:
+        pass
 
 class Tools:
     @staticmethod
@@ -253,4 +308,4 @@ class Dataset:
         #self.analysis = {'sd_add_trend':self.sd_add.trend,
         #                 'sd_add_seasonal':self.sd_add.seasonal,
         #                 'sd_mult_trend':self.sd_mult.trend,
-        #                 'sd_mult_seasonal':self.sd_mult.seasonal}
+        #                 'sd_mult_seasonal':self.sd_mult.seasonal} 
