@@ -1,5 +1,5 @@
 import config as cfg
-
+import warnings
 import pandas as pd
 import numpy as np
 import statsmodels.api as sm
@@ -12,12 +12,21 @@ from io import StringIO
 import re
 import dateutil.parser
 import os
+from minisom import MiniSom
+import math
+import matplotlib.pyplot as plt
+import tslearn as ts
 
 import pandasdmx as sdmx
 import yfinance as yf
 import wbgapi as wb
 
+from sklearn.cluster import KMeans
 
+import scipy.special as sc
+
+sc.seterr(singular='raise')
+warnings.filterwarnings("ignore")
 
 class Fetcher:
     class YahooFinance:
@@ -233,30 +242,12 @@ class Container:
         self.name = name
         self.data = {}
 
-        self.dr_min = None
-        self.dr_max = None
-
-    def update(self):
-        self.keys = [i for i in self.data.keys()]
-        self.values = [i for i in self.data.values()]
-
-        temp_min = []
-        temp_max = []
-        for i in self.values:
-            temp_min.append(i.dr_min.astype('datetime64[D]'))
-            temp_max.append(i.dr_max.astype('datetime64[D]'))
-        
-        self.dr_min = max(temp_min)
-        self.dr_max = min(temp_max)
-
     def load_file(self,path):
         temp = Timeseries(path)
         self.data[temp.name] = temp
-        self.update()
 
     def load_DF(self,input):
         self.data[input.name] = input
-        self.update()
 
     def load_folder(self,folder,files=None):
         if files is None:
@@ -308,19 +299,28 @@ class Container:
     def build(self,input,freq,order,start=None,end=None):
         result = []
         
+        temp_mins = []
+        temp_maxs = []
+
+
         if start is None and end is None:
-            start = self.dr_min
-            end = self.dr_max
+            for key, value in input.items():
+                obj = self.data[key]
+                temp_mins.append(obj.dr_min)
+                temp_maxs.append(obj.dr_max)
+
+        start = max(temp_mins)
+        end = min(temp_maxs)
 
         for key, value in input.items():
             obj = self.data[key]
+        
             if not freq == obj.freq:
                 obj.match(freq,order)
             
             if value:
                 obj.filter_features(value)
                 
-            
             obj.filter_index(start,end)
             obj.data.columns = [key+'_'+i for i in obj.data.columns]
 
@@ -331,12 +331,10 @@ class Container:
         final.index.name = 'date'
         final.name = self.name
 
-        return Dataset(final)
+        print(start)
+        print(end)
 
-    def save(self,path):
-        f = open(path, 'wb')
-        pickle.dump(self.__dict__, f, 2)
-        f.close()
+        return Dataset(final)
 
 class Dataset:
     def __init__(self,data):
@@ -360,16 +358,51 @@ class Dataset:
     def to_excel(self,path):
         self.data.to_excel(path)
 
-class Problem:
-    class Classification:
-        pass
-
+class Problems:
     class Clustering:
-        pass
+        class SOM:
+            def __init__(self,dataset,sigma,rate,iteration):
+                self.dataset = dataset.data
 
-    class Prediction:
-        pass
+                self.sigma = sigma
+                self.rate = rate
+                self.iteration = iteration
+            
+                self.solver = None
+                self.result = None
 
+            def solve(self):
+                data = self.dataset.values
+
+                dim_x = len(data[0])
+                dim_y = len(data)
+
+                self.solver = MiniSom(dim_x, dim_y,dim_x, sigma=self.sigma, learning_rate = self.rate)
+
+                self.solver.random_weights_init(data)
+                self.solver.train(data, self.iteration)
+
+        class kMeans:
+            def __init__(self,dataset,cluster):
+                self.dataset = dataset.data
+                self.columns = self.dataset.columns
+                self.cluster = cluster
+
+                self.solver = None
+                self.result = None
+
+            def solve(self):
+                self.solver = KMeans(n_clusters=self.cluster)
+                self.result = self.solver.fit_predict(self.dataset.values.T)
+
+            def report(self):
+                clusters = self.result
+                columns = self.columns.values
+
+
+                tmp = dict(zip(columns,clusters))
+                return pd.DataFrame({'columns':columns,'clusters':clusters})
+                
 class Model:
     pass
 

@@ -1,3 +1,8 @@
 /.DS_Store
-*.mz
+
 data/
+
+*.mz
+*.xls
+*.xlsx
+*.csv
