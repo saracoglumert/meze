@@ -331,9 +331,6 @@ class Container:
         final.index.name = 'date'
         final.name = self.name
 
-        print(start)
-        print(end)
-
         return Dataset(final)
 
 class Dataset:
