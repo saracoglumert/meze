@@ -9,16 +9,8 @@ if __name__ == "__main__":
        cont = mz.Container('deneme')
 
 
-       #cont.load_file('data/interests.xls')
-       #cont.load_file('data/WB.xlsx')
-       
-       #cont.load_folder('data/SP500',['AAPL.xlsx',
-                                      #'GOOG.xlsx',
-                                      #'NVDA.xlsx',
-                                      #'TSLA.xlsx',
-                                      #'MSFT.xlsx',
-                                      #'META.xlsx',
-                                      #'AMZN.xlsx'])
+       cont.load_file('data/interests.xls')
+       cont.load_file('data/WB.xlsx')
        
        cont.load_folder('data/SP500')
        
@@ -57,5 +49,5 @@ if __name__ == "__main__":
 
        res = cont.build(filter,'D',3)
 
-       #prob = mz.Problems.Clustering.kMeans(res,2)
+       prob = mz.Problems.Clustering.kMeans(res,3)
        #prob = mz.Problems.Clustering.

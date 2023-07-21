@@ -10,6 +10,11 @@ Work in progress...
 - Can load xlsx and csv files
 - Analyse time series data
 
+## Fast
+- plot
+- cluster içinde işaretleyip gerisini buldur
+- cluster sayısını bile söylemiyorum
+
 
 ## Roadmap
 Features to be implemented in future
