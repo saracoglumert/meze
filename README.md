@@ -21,7 +21,7 @@ Features to be implemented in future
 
 **Level 1**
 - Implement APIs from Yahoo Finance and World Bank (fredapi, yfinance, wbapi, imfpy and pandaSDMX)
-- Implementing Pytorch and Keras support
+- Implement Pytorch and Keras support
 - Implement console debugging
 - ANOVA Table
 

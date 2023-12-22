@@ -296,7 +296,7 @@ class Container:
 
         return df
     
-    def build(self,input,freq,order,start=None,end=None):
+    def build(self,input,freq,order,start=None,end=None,onlybusinessdays=False):
         result = []
         
         temp_mins = []
@@ -327,6 +327,12 @@ class Container:
             result.append(obj.data)
 
         final = pd.concat(result,axis=1)
+
+        if(onlybusinessdays):
+            final = final[final.index.dayofweek < 5]
+
+
+
         final.index = final.index.date
         final.index.name = 'date'
         final.name = self.name
@@ -341,7 +347,7 @@ class Dataset:
 
         self.freq = pd.infer_freq(self.data.index)
         #self.period = cfg.CONST_FREQ_MAP[self.freq.split("-")[0]]
-        
+
         # Seasonal Decomposition
         #self.sd_add = sm.tsa.seasonal_decompose(np.asarray(self.data), model='additive',period=self.period)
         #self.sd_mult = sm.tsa.seasonal_decompose(np.asarray(self.data), model='multiplicative',period=self.period)
@@ -380,10 +386,12 @@ class Problems:
                 self.solver.train(data, self.iteration)
 
         class kMeans:
-            def __init__(self,dataset,cluster):
+            def __init__(self,dataset,cluster,drop=False):
                 self.dataset = dataset.data
                 self.columns = self.dataset.columns
                 self.cluster = cluster
+
+                self.dataset = self.dataset.dropna()
 
                 self.solver = None
                 self.result = None

@@ -18,8 +18,8 @@ if __name__ == "__main__":
        b = [['price'] for _ in range(len(a))]
        filter_all = dict(zip(a,b))
 
-       filter =  {#'interests':['FED','ECB'],
-                 #'WB':[],
+       filter =  {'interests':['FED'],
+                 'WB':['USA_NE.TRD.GNFS.ZS','USA_NY.GDP.MKTP.CD','USA_NY.GDP.PCAP.CD','USA_NE.CON.TOTL.CD','USA_EN.ATM.CO2E.KT','USA_HD.HCI.OVRL','USA_SP.DYN.LE00.IN'],
                  'AAPL':['price'],
                  'GOOG':['price'],
                  'NVDA':['price'],
